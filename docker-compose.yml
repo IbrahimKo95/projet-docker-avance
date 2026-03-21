@@ -1,0 +1,105 @@
+services:
+  auth-service:
+    build:
+      context: ./services/auth-service
+      target: development
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./services/auth-service/.env
+    volumes:
+      - ./services/auth-service:/app
+      - /app/node_modules
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  product-service:
+    build:
+      context: ./services/product-service
+      target: development
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./services/product-service/.env
+    volumes:
+      - ./services/product-service:/app
+      - /app/node_modules
+    depends_on:
+      product-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./services/order-service
+      target: development
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./services/order-service/.env
+    volumes:
+      - ./services/order-service:/app
+      - /app/node_modules
+    depends_on:
+      order-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  auth-db:
+    image: mongo:6
+    volumes:
+      - auth-db-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  product-db:
+    image: mongo:6
+    volumes:
+      - product-db-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  order-db:
+    image: mongo:6
+    volumes:
+      - order-db-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+volumes:
+  auth-db-data:
+  product-db-data:
+  order-db-data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
