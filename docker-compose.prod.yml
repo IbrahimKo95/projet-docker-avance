@@ -1,0 +1,102 @@
+services:
+  auth-service:
+    image: ghcr.io/ibrahimko95/auth-service:latest
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./services/auth-service/.env.production
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  product-service:
+    image: ghcr.io/ibrahimko95/product-service:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./services/product-service/.env.production
+    depends_on:
+      product-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  order-service:
+    image: ghcr.io/ibrahimko95/order-service:latest
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./services/order-service/.env.production
+    depends_on:
+      order-db:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  frontend:
+    image: ghcr.io/ibrahimko95/frontend-service:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  auth-db:
+    image: mongo:4.4
+    volumes:
+      - auth-db-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  product-db:
+    image: mongo:4.4
+    volumes:
+      - product-db-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  order-db:
+    image: mongo:4.4
+    volumes:
+      - order-db-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+volumes:
+  auth-db-data:
+  product-db-data:
+  order-db-data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
