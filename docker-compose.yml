@@ -53,12 +53,31 @@ services:
       - ecommerce-network
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
   auth-db:
-    image: mongo:6
+    image: mongo:4.4
     volumes:
       - auth-db-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -68,11 +87,11 @@ services:
     restart: unless-stopped
 
   product-db:
-    image: mongo:6
+    image: mongo:4.4
     volumes:
       - product-db-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -82,11 +101,11 @@ services:
     restart: unless-stopped
 
   order-db:
-    image: mongo:6
+    image: mongo:4.4
     volumes:
       - order-db-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 3
