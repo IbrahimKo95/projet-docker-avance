@@ -6,9 +6,11 @@ COPY . .
 CMD ["npm", "run", "dev"]
 
 FROM node:18-alpine AS production
+RUN addgroup -S app && adduser -S -G app app
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev && npm cache clean --force
 COPY . .
-USER 1000
+RUN chown -R app:app /app
+USER app
 CMD ["npm", "run", "start"]
