@@ -19,13 +19,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lowercase owner
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Build and push auth-service
         uses: docker/build-push-action@v5
         with:
           context: ./services/auth-service
           target: production
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/auth-service:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/auth-service:latest
 
       - name: Build and push product-service
         uses: docker/build-push-action@v5
@@ -33,7 +36,7 @@ jobs:
           context: ./services/product-service
           target: production
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/product-service:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/product-service:latest
 
       - name: Build and push order-service
         uses: docker/build-push-action@v5
@@ -41,7 +44,7 @@ jobs:
           context: ./services/order-service
           target: production
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/order-service:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/order-service:latest
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
@@ -49,4 +52,4 @@ jobs:
           context: ./frontend
           target: production
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/frontend-service:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/frontend-service:latest
